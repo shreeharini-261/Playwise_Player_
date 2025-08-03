@@ -503,6 +503,49 @@ const Index = () => {
 
           {/* Ratings Tab */}
           <TabsContent value="ratings" className="space-y-6">
+            {/* Search Section */}
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Search Songs (HashMap O(1) Lookup)</CardTitle>
+                <CardDescription>Instant song lookup using hash table implementation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Search by title or artist..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white"
+                  />
+                  <Button onClick={handleSearch} className="bg-purple-600 hover:bg-purple-700">
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </Button>
+                </div>
+                
+                {searchResults.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-white font-medium">Search Results:</h4>
+                    {searchResults.map(song => (
+                      <div key={song.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                        <div>
+                          <p className="text-white font-medium">{song.title}</p>
+                          <p className="text-gray-300 text-sm">{song.artist} • {formatDuration(song.duration)}</p>
+                        </div>
+                        <Button onClick={() => handlePlaySong(song.id)} size="sm" variant="outline">
+                          <Play className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {searchQuery && searchResults.length === 0 && (
+                  <p className="text-gray-400 text-center py-4">No songs found for "{searchQuery}"</p>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white">Rate Songs (Binary Search Tree)</CardTitle>
