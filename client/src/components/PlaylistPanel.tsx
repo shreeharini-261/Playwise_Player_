@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import { Plus, Play, MoreVertical, ArrowUpDown, RotateCcw, Trash2, ArrowUp, ArrowDown, Music } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Play, Trash2, ArrowUpDown, RotateCcw, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Song, SortCriteria, SortOrder, PlaywiseAnalytics } from '@/lib/playwise-engine';
+import { Badge } from '@/components/ui/badge';
+import { Song, SortCriteria, SortOrder } from '@/lib/playwise-engine';
 
 interface PlaylistPanelProps {
   songs: Song[];
@@ -19,27 +17,30 @@ interface PlaylistPanelProps {
   onPlaySong: (songId: string) => void;
 }
 
-export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
+export const PlaylistPanel = ({
   songs,
   onAddSong,
   onDeleteSong,
   onMoveSong,
   onReversePlayslist,
   onSortPlaylist,
-  onPlaySong
-}) => {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  onPlaySong,
+}: PlaylistPanelProps) => {
   const [newSong, setNewSong] = useState({ title: '', artist: '', duration: '' });
-  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('addedAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('title');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const handleAddSong = () => {
     if (newSong.title && newSong.artist && newSong.duration) {
-      const duration = parseInt(newSong.duration) * 60; // Convert minutes to seconds
-      onAddSong(newSong.title, newSong.artist, duration);
+      onAddSong(newSong.title, newSong.artist, parseInt(newSong.duration));
       setNewSong({ title: '', artist: '', duration: '' });
-      setIsAddDialogOpen(false);
     }
+  };
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleSort = () => {
@@ -47,196 +48,162 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   };
 
   return (
-    <Card className="bg-music-player border-border/50 shadow-card">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-music-text-primary mb-1">Current Playlist</h2>
-            <p className="text-sm text-music-text-muted">
-              {songs.length} songs • {PlaywiseAnalytics.formatDuration(PlaywiseAnalytics.getTotalDuration(songs))}
-            </p>
+    <Card className="bg-music-sidebar border-border/50">
+      <CardHeader>
+        <CardTitle className="text-music-text-primary flex items-center gap-2">
+          <Play className="h-5 w-5" />
+          Playlist Engine (Doubly Linked List)
+        </CardTitle>
+        <CardDescription className="text-music-text-muted">
+          Add, remove, and manage songs in your playlist. Demonstrates doubly linked list operations.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Add Song Form */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-music-player rounded-lg border border-border/50">
+          <Input
+            placeholder="Song title"
+            value={newSong.title}
+            onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
+            className="bg-music-sidebar border-border/50 text-music-text-primary"
+          />
+          <Input
+            placeholder="Artist"
+            value={newSong.artist}
+            onChange={(e) => setNewSong({ ...newSong, artist: e.target.value })}
+            className="bg-music-sidebar border-border/50 text-music-text-primary"
+          />
+          <Input
+            placeholder="Duration (seconds)"
+            type="number"
+            value={newSong.duration}
+            onChange={(e) => setNewSong({ ...newSong, duration: e.target.value })}
+            className="bg-music-sidebar border-border/50 text-music-text-primary"
+          />
+          <Button 
+            onClick={handleAddSong} 
+            className="bg-music-accent hover:bg-music-accent/80 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Song
+          </Button>
+        </div>
+
+        {/* Playlist Controls */}
+        <div className="flex flex-wrap gap-4 p-4 bg-music-player rounded-lg border border-border/50">
+          <div className="flex gap-2">
+            <Select value={sortCriteria} onValueChange={(value: SortCriteria) => setSortCriteria(value)}>
+              <SelectTrigger className="w-32 bg-music-sidebar border-border/50 text-music-text-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="title">Title</SelectItem>
+                <SelectItem value="artist">Artist</SelectItem>
+                <SelectItem value="duration">Duration</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
+              <SelectTrigger className="w-32 bg-music-sidebar border-border/50 text-music-text-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asc">Ascending</SelectItem>
+                <SelectItem value="desc">Descending</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={handleSort}
+              variant="outline"
+              className="border-border/50 text-music-text-primary hover:bg-music-accent hover:text-white"
+            >
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              Sort (Merge Sort)
+            </Button>
+          </div>
+          <Button 
+            onClick={onReversePlayslist}
+            variant="outline"
+            className="border-border/50 text-music-text-primary hover:bg-music-accent hover:text-white"
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reverse Playlist
+          </Button>
+        </div>
+
+        {/* Song List */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-music-text-primary">
+              Current Playlist ({songs.length} songs)
+            </h3>
+            <Badge variant="secondary" className="bg-music-accent text-white">
+              Total: {songs.reduce((acc, song) => acc + song.duration, 0)} seconds
+            </Badge>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-music-text-secondary border-border/50">
-                  <ArrowUpDown className="w-4 h-4 mr-2" />
-                  Sort
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-music-player border-border/50">
-                <div className="p-3 space-y-3">
-                  <div>
-                    <Label className="text-xs text-music-text-muted">Sort by</Label>
-                    <Select value={sortCriteria} onValueChange={(value) => setSortCriteria(value as SortCriteria)}>
-                      <SelectTrigger className="bg-music-sidebar border-border/50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-music-player border-border/50">
-                        <SelectItem value="title">Title</SelectItem>
-                        <SelectItem value="artist">Artist</SelectItem>
-                        <SelectItem value="duration">Duration</SelectItem>
-                        <SelectItem value="addedAt">Date Added</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-music-text-muted">Order</Label>
-                    <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
-                      <SelectTrigger className="bg-music-sidebar border-border/50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-music-player border-border/50">
-                        <SelectItem value="asc">Ascending</SelectItem>
-                        <SelectItem value="desc">Descending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button onClick={handleSort} size="sm" className="w-full bg-music-accent hover:bg-music-accent/90">
-                    Apply Sort
-                  </Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onReversePlayslist}
-              className="text-music-text-secondary border-border/50"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-music-accent hover:bg-music-accent/90">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Song
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-music-player border-border/50">
-                <DialogHeader>
-                  <DialogTitle className="text-music-text-primary">Add New Song</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title" className="text-music-text-secondary">Song Title</Label>
-                    <Input
-                      id="title"
-                      value={newSong.title}
-                      onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
-                      className="bg-music-sidebar border-border/50"
-                      placeholder="Enter song title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="artist" className="text-music-text-secondary">Artist</Label>
-                    <Input
-                      id="artist"
-                      value={newSong.artist}
-                      onChange={(e) => setNewSong({ ...newSong, artist: e.target.value })}
-                      className="bg-music-sidebar border-border/50"
-                      placeholder="Enter artist name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="duration" className="text-music-text-secondary">Duration (minutes)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={newSong.duration}
-                      onChange={(e) => setNewSong({ ...newSong, duration: e.target.value })}
-                      className="bg-music-sidebar border-border/50"
-                      placeholder="Enter duration in minutes"
-                    />
-                  </div>
-                  <Button onClick={handleAddSong} className="w-full bg-music-accent hover:bg-music-accent/90">
-                    Add Song
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        <div className="space-y-2">
           {songs.length === 0 ? (
-            <div className="text-center py-12">
-              <Music className="w-12 h-12 text-music-text-muted mx-auto mb-4" />
-              <p className="text-music-text-muted">Your playlist is empty</p>
-              <p className="text-sm text-music-text-muted/70 mt-1">Add some songs to get started</p>
+            <div className="text-center py-8 text-music-text-muted">
+              No songs in playlist. Add some songs to get started!
             </div>
           ) : (
-            songs.map((song, index) => (
-              <div
-                key={song.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-music-sidebar/50 hover:bg-music-sidebar/70 transition-colors border border-border/30"
-              >
-                <div className="flex items-center space-x-4 flex-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onPlaySong(song.id)}
-                    className="w-8 h-8 p-0 hover:bg-music-accent/20 text-music-accent"
-                  >
-                    <Play className="w-4 h-4" />
-                  </Button>
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-music-text-primary truncate">{song.title}</p>
-                    <p className="text-sm text-music-text-muted truncate">{song.artist}</p>
-                  </div>
-                  
-                  <div className="text-sm text-music-text-muted">
-                    {PlaywiseAnalytics.formatDuration(song.duration)}
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => index > 0 && onMoveSong(index, index - 1)}
-                    disabled={index === 0}
-                    className="w-8 h-8 p-0 text-music-text-muted hover:text-music-text-primary"
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                  </Button>
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => index < songs.length - 1 && onMoveSong(index, index + 1)}
-                    disabled={index === songs.length - 1}
-                    className="w-8 h-8 p-0 text-music-text-muted hover:text-music-text-primary"
-                  >
-                    <ArrowDown className="w-4 h-4" />
-                  </Button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-8 h-8 p-0 text-music-text-muted hover:text-music-text-primary">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-music-player border-border/50">
-                      <DropdownMenuItem 
-                        onClick={() => onDeleteSong(index)}
-                        className="text-destructive hover:bg-destructive/20"
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {songs.map((song, index) => (
+                <div
+                  key={song.id}
+                  className="flex items-center justify-between p-3 bg-music-player rounded-lg border border-border/50 hover:bg-music-accent/10 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col space-y-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => index > 0 && onMoveSong(index, index - 1)}
+                        disabled={index === 0}
+                        className="h-6 w-6 p-0 text-music-text-muted hover:text-music-text-primary"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <ArrowUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => index < songs.length - 1 && onMoveSong(index, index + 1)}
+                        disabled={index === songs.length - 1}
+                        className="h-6 w-6 p-0 text-music-text-muted hover:text-music-text-primary"
+                      >
+                        <ArrowDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-music-text-primary truncate">{song.title}</p>
+                      <p className="text-sm text-music-text-muted truncate">{song.artist}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="border-border/50 text-music-text-muted">
+                      {formatDuration(song.duration)}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      onClick={() => onPlaySong(song.id)}
+                      className="bg-music-accent hover:bg-music-accent/80 text-white"
+                    >
+                      <Play className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => onDeleteSong(index)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

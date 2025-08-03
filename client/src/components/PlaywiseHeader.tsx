@@ -1,5 +1,5 @@
-import React from 'react';
-import { Music, Search, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Music } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -8,38 +8,52 @@ interface PlaywiseHeaderProps {
   searchQuery: string;
 }
 
-export const PlaywiseHeader: React.FC<PlaywiseHeaderProps> = ({ onSearch, searchQuery }) => {
-  return (
-    <header className="bg-music-sidebar border-b border-border/50 px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              PlayWise
-            </h1>
-          </div>
-          <span className="text-music-text-muted text-sm font-medium">
-            Smart Playlist Engine
-          </span>
-        </div>
+export const PlaywiseHeader = ({ onSearch, searchQuery }: PlaywiseHeaderProps) => {
+  const [localQuery, setLocalQuery] = useState(searchQuery);
 
-        <div className="flex items-center space-x-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-music-text-muted" />
-            <Input
-              type="text"
-              placeholder="Search songs, artists..."
-              value={searchQuery}
-              onChange={(e) => onSearch(e.target.value)}
-              className="pl-10 bg-music-player border-border/50 text-music-text-primary placeholder:text-music-text-muted"
-            />
+  const handleSearch = () => {
+    onSearch(localQuery);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  return (
+    <header className="bg-music-player border-b border-border/50 shadow-sm">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-music-accent p-2 rounded-lg">
+              <Music className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-music-text-primary">PlayWise</h1>
+              <p className="text-sm text-music-text-muted">Smart Playlist Management</p>
+            </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-music-text-secondary hover:text-music-text-primary">
-            <Settings className="w-5 h-5" />
-          </Button>
+
+          <div className="flex items-center space-x-4 max-w-md w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-music-text-muted" />
+              <Input
+                type="text"
+                placeholder="Search songs, artists..."
+                value={localQuery}
+                onChange={(e) => setLocalQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-10 bg-music-sidebar border-border/50 text-music-text-primary placeholder-music-text-muted"
+              />
+            </div>
+            <Button 
+              onClick={handleSearch}
+              className="bg-music-accent hover:bg-music-accent/80 text-white"
+            >
+              Search
+            </Button>
+          </div>
         </div>
       </div>
     </header>

@@ -259,9 +259,11 @@ const Index = () => {
           <TabsContent value="rating" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <RatingPanel
+                songs={currentSongs}
                 onRateSong={handleRateSong}
                 onSearchByRating={handleSearchByRating}
-                allSongs={currentSongs}
+                getSongRating={(songId) => engine.getSongRating(songId)}
+                snapshot={snapshot}
               />
               
               <div className="bg-music-player border border-border/50 rounded-lg p-6">
@@ -293,9 +295,9 @@ const Index = () => {
           <TabsContent value="history" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <HistoryPanel
-                recentHistory={snapshot.recentHistory}
+                history={snapshot.history}
                 onUndoLastPlay={handleUndoLastPlay}
-                onPlaySong={handlePlaySong}
+                lastPlayed={engine.history.getLastPlayed()}
               />
               
               <div className="bg-music-player border border-border/50 rounded-lg p-6">
@@ -330,6 +332,7 @@ const Index = () => {
                 blockedArtists={snapshot.blockedArtists}
                 onAddToBlocklist={handleAddToBlocklist}
                 onRemoveFromBlocklist={handleRemoveFromBlocklist}
+                snapshot={snapshot}
               />
               
               <div className="bg-music-player border border-border/50 rounded-lg p-6">
